@@ -16,9 +16,9 @@
                             </button>
                             <div class="dropdown-menu">
                                 <a href="{{ route('dashboard') }}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-                                <a href="{{ route('profile') }}"><i class="fas fa-user-edit"></i> Profile</a>
-                                <a href="{{ route('downloads') }}"><i class="fas fa-download"></i> My Downloads</a>
-                                <a href="{{ route('orders') }}"><i class="fas fa-shopping-bag"></i> Orders</a>
+                                <a href="#"><i class="fas fa-user-edit"></i> Profile</a>
+                                <a href="#"><i class="fas fa-download"></i> My Downloads</a>
+                                <a href="#"><i class="fas fa-shopping-bag"></i> Orders</a>
                                 <div class="dropdown-divider"></div>
                                 <a href="{{ route('logout') }}"
                                     onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
