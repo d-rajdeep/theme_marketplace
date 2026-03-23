@@ -12,11 +12,11 @@ class Product extends Model
         'slug',
         'description',
         'price',
-        'thumbnail',
-        'demo_url',
-        'file_path',
         'type',
         'status',
+        'demo_url',
+        'thumbnail',
+        'file_path'
     ];
 
     // Product belongs to a category

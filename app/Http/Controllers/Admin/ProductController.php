@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\ProductImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
@@ -40,14 +41,14 @@ class ProductController extends Controller
 
         // Handle thumbnail upload
         $thumbnailPath = null;
-        if ($request->hasFile('thumbnail')) {
+        if ($request->hasFile('thumbnail') && $request->file('thumbnail')->isValid()) {
             $thumbnailPath = $request->file('thumbnail')
                 ->store('products/thumbnails', 'public');
         }
 
         // Handle downloadable file upload
         $filePath = null;
-        if ($request->hasFile('file')) {
+        if ($request->hasFile('file') && $request->file('file')->isValid()) {
             $filePath = $request->file('file')
                 ->store('products/files', 'private');
         }
@@ -68,12 +69,14 @@ class ProductController extends Controller
         // Handle extra product images
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $index => $image) {
-                $path = $image->store('products/images', 'public');
-                ProductImage::create([
-                    'product_id' => $product->id,
-                    'image_path' => $path,
-                    'is_primary' => $index === 0,
-                ]);
+                if ($image && $image->isValid()) {
+                    $path = $image->store('products/images', 'public');
+                    ProductImage::create([
+                        'product_id' => $product->id,
+                        'image_path' => $path,
+                        'is_primary' => $index === 0,
+                    ]);
+                }
             }
         }
 
@@ -102,19 +105,7 @@ class ProductController extends Controller
             'images.*'    => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
-        // Handle new thumbnail
-        if ($request->hasFile('thumbnail')) {
-            $product->thumbnail = $request->file('thumbnail')
-                ->store('products/thumbnails', 'public');
-        }
-
-        // Handle new downloadable file
-        if ($request->hasFile('file')) {
-            $product->file_path = $request->file('file')
-                ->store('products/files', 'private');
-        }
-
-        $product->update([
+        $data = [
             'category_id' => $request->category_id,
             'name'        => $request->name,
             'slug'        => Str::slug($request->name),
@@ -123,19 +114,38 @@ class ProductController extends Controller
             'type'        => $request->type,
             'status'      => $request->status,
             'demo_url'    => $request->demo_url,
-            'thumbnail'   => $product->thumbnail,
-            'file_path'   => $product->file_path,
-        ]);
+        ];
+
+        // Handle new thumbnail safely
+        if ($request->hasFile('thumbnail') && $request->file('thumbnail')->isValid()) {
+            $oldThumbnail = trim((string) $product->thumbnail);
+            if ($oldThumbnail !== '') {
+                Storage::disk('public')->delete($oldThumbnail);
+            }
+            $data['thumbnail'] = $request->file('thumbnail')->store('products/thumbnails', 'public');
+        }
+
+        // Handle new downloadable file safely
+        if ($request->hasFile('file') && $request->file('file')->isValid()) {
+            $oldFile = trim((string) $product->file_path);
+            if ($oldFile !== '') {
+                Storage::disk('private')->delete($oldFile);
+            }
+            $data['file_path'] = $request->file('file')->store('products/files', 'private');
+        }
+
+        $product->update($data);
 
         // Handle new extra images
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $index => $image) {
-                $path = $image->store('products/images', 'public');
-                ProductImage::create([
-                    'product_id' => $product->id,
-                    'image_path' => $path,
-                    'is_primary' => false,
-                ]);
+                if ($image && $image->isValid()) {
+                    ProductImage::create([
+                        'product_id' => $product->id,
+                        'image_path' => $image->store('products/images', 'public'),
+                        'is_primary' => false,
+                    ]);
+                }
             }
         }
 
@@ -145,7 +155,30 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
+        // 1. Safely delete thumbnail
+        $thumbnail = trim((string) $product->thumbnail);
+        if ($thumbnail !== '') {
+            Storage::disk('public')->delete($thumbnail);
+        }
+
+        // 2. Safely delete downloadable file
+        $filePath = trim((string) $product->file_path);
+        if ($filePath !== '') {
+            Storage::disk('private')->delete($filePath);
+        }
+
+        // 3. Safely delete associated gallery images
+        foreach ($product->images as $image) {
+            $imagePath = trim((string) $image->image_path);
+            if ($imagePath !== '') {
+                Storage::disk('public')->delete($imagePath);
+            }
+            $image->delete();
+        }
+
+        // 4. Finally, delete the product record
         $product->delete();
+
         return redirect()->route('admin.products.index')
             ->with('success', 'Product deleted successfully.');
     }
