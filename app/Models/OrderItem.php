@@ -6,11 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class OrderItem extends Model
 {
-    protected $fillable = [
-        'order_id',
-        'product_id',
-        'price',
-    ];
+    protected $guarded = [];
 
     // Order item belongs to an order
     public function order()

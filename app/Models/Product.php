@@ -50,4 +50,9 @@ class Product extends Model
     {
         return $query->where('status', 'active');
     }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class)->latest();
+    }
 }

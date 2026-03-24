@@ -6,21 +6,24 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up(): void
+    public function up()
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('order_number')->unique();
             $table->decimal('total_amount', 10, 2);
-            $table->enum('status', ['pending', 'paid', 'failed'])->default('pending');
-            $table->string('razorpay_order_id')->nullable();
-            $table->string('razorpay_payment_id')->nullable();
+            $table->string('payment_method')->default('razorpay');
+            $table->string('payment_status')->default('completed'); // pending, completed, failed
+            $table->string('billing_name');
+            $table->string('billing_email');
+            $table->string('billing_phone')->nullable(); // Contact Number
+            $table->string('billing_country')->nullable(); // Includes 'Other' custom countries
             $table->timestamps();
         });
     }
 
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('orders');
     }

@@ -6,14 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
 {
-    protected $fillable = [
-        'user_id',
-        'order_number',
-        'total_amount',
-        'status',
-        'razorpay_order_id',
-        'razorpay_payment_id',
-    ];
+    protected $guarded = [];
 
     // Order belongs to a user
     public function user()

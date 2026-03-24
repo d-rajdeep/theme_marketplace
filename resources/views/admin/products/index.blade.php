@@ -129,9 +129,9 @@
                     <i class="fas fa-box-open"></i>
                     <h3>No Products Found</h3>
                     <p>Get started by adding your first product.</p>
-                    <a href="{{ route('admin.products.create') }}" class="btn btn-primary">
+                    {{-- <a href="{{ route('admin.products.create') }}" class="btn btn-primary">
                         <i class="fas fa-plus"></i> Add Product
-                    </a>
+                    </a> --}}
                 </div>
             @endif
         </div>

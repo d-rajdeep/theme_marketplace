@@ -16,7 +16,8 @@ class DashboardController extends Controller
             'total_users'    => User::where('role', 'user')->count(),
             'total_products' => Product::count(),
             'total_orders'   => Order::count(),
-            'total_revenue'  => Order::where('status', 'paid')->sum('total_amount'),
+            // FIXED: Changed 'status' to 'payment_status' and 'paid' to 'completed'
+            'total_revenue'  => Order::where('payment_status', 'completed')->sum('total_amount'),
             'total_categories' => Category::count(),
             'recent_orders'  => Order::with('user')
                 ->latest()

@@ -36,6 +36,10 @@ body {
     color: var(--white);
     padding: 10px 0;
     font-size: 14px;
+    position: relative;
+    /* ADDED */
+    z-index: 1001;
+    /* ADDED (Higher than navbar's 1000) */
 }
 
 .header-top-content {

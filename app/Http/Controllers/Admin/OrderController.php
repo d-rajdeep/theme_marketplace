@@ -24,4 +24,12 @@ class OrderController extends Controller
         $order->update(['status' => $status]);
         return back()->with('success', 'Order status updated.');
     }
+
+    public function destroy(Order $order)
+    {
+        $order->delete();
+
+        return redirect()->route('admin.orders.index')
+            ->with('success', 'Order #' . $order->order_number . ' has been successfully deleted.');
+    }
 }
